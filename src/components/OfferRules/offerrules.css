@@ -1,0 +1,11 @@
+.offer-rule-container {
+    margin:0 auto;
+    border: 1px solid #ccc;
+    padding: 32px;
+    max-width: 950px;
+}
+
+.header-content {
+    padding-bottom: 12px;
+    border-bottom: 1px solid #cccc;
+}
