@@ -9,6 +9,10 @@ import SearchIcon from '../../assets/search-icon.png'
 import { Button } from '../../shared/components/Form/Button'
 import Checkbox from '../../shared/components/Form/Checkbox'
 import FacetChip from '../../shared/components/UI/FacetChip'
+import SelectDropdown from '../../shared/components/Form/SelectDropdown'
+import DeleteIcon from '../../shared/components/UI/DeleteIcon'
+import SelectOption from '../../shared/components/Form/SelectOption'
+import RangeInput from '../../shared/components/Form/RangeInput'
 
 const EligibilityCriteria = () => {
     const [offerIndex, setOfferIndex] = useState(0)
@@ -19,7 +23,7 @@ const EligibilityCriteria = () => {
         {
             priority: priorityOrderRules[offerIndex]?.priority,
             attribute_type: priorityOrderRules[offerIndex]?.rule_name,
-            rule: ruleData[priorityOrderRules[offerIndex]?.rule_name]?.rule_options[0]?.value ?? '',
+            rule: ruleData[priorityOrderRules[offerIndex]?.rule_name]?.rule_options[0].value,
             values: []
         }])
 
@@ -35,7 +39,7 @@ const EligibilityCriteria = () => {
             {
                 priority: getRuleIndex,
                 attribute_type: priorityOrderRules[getRuleIndex]?.rule_name,
-                rule: ruleData[priorityOrderRules[getRuleIndex]?.rule_name]?.rule_options[0]?.value ?? '',
+                rule: ruleData[priorityOrderRules[getRuleIndex].rule_name]?.rule_options[0].value,
                 values: [],
             }])
     }
@@ -102,6 +106,9 @@ const EligibilityCriteria = () => {
                 }
                 return option
             })
+            const filterSelected = exclusiveRule?.rule_options.filter((option) => option.selected)
+            const filterUnSelected = exclusiveRule?.rule_options.filter((option) => !option.selected)
+            exclusiveRule.rule_options = [...filterUnSelected, ...filterSelected]
         }
         setOffers(offers.map((offer) => 
         offer.attribute_type == offers[ruleInd].attribute_type ? {
@@ -119,39 +126,44 @@ const EligibilityCriteria = () => {
         };
     }, []);
 
+    console.log('offers', offers)
+
   return (
     <div className='eligibility-criteria-container'>
-          {offers.map((offer, i) => <div key={offer?.priority} className="relative"> 
+          {offers.map((offer, i) => {
+            const ruleOptions =  ruleData[offer?.attribute_type]
+          return <div key={offer?.priority} className="relative"> 
           <div className={`rules-container relative left-[27px] pr-5 ${i !== 0 ? 'pt-[46px]' : 'pt-0'}`}>
               {i > 0 && <BorderLineUI />}
-              {/** main criteria rules to select eligibility */}
                 <div className='relative flex-grow'>
-                    <img src={DropdownIcon} className={'absolute w-5 h-5 right-0 top-2'} />
-                    <select className='select-dropdown-rules text-sm' defaultValue={offer?.attribute_type} onChange={(e) => handleOfferRule(e, i)}>
-                        {priorityOrderRules.map((rule, priorityIndex) =>
-                            <option
-                                key={priorityIndex}
-                                value={rule?.rule_name}
-                                data-rules={rule?.priority}
-                                disabled={offer?.priority !== rule?.priority ? rule?.disabled : false}>
-                                {rule?.label}
-                            </option>
+                    <SelectDropdown containerStyle={`select-dropdown-rules text-sm `} onChange={(e) => handleOfferRule(e, i)} defaultValue={offer?.attribute_type} >
+                        {priorityOrderRules.map((rule, priorityIndex) => 
+                        <SelectOption 
+                            key={priorityIndex}
+                            value={rule?.rule_name}
+                            data-rules={rule?.priority}
+                            disabled={offer?.priority !== rule?.priority ? rule?.disabled : false}
+                            label={rule?.label}/>
                         )}
-                    </select>
+                    </SelectDropdown>
                 </div>
-                {/** rules specfic dropdown values for inclusion and exclusion */}
-              {ruleData[offer?.attribute_type]?.rule_options && <div className='relative flex-grow'>
-                    <img src={DropdownIcon} className={'absolute w-5 h-5 right-0 top-2'} /> <select className='w-full select-dropdown-rule text-sm' onChange={(e) => handleSpecificRules(e, i)}>
-                  {ruleData[offer?.attribute_type].rule_options?.map((option, ruleIndex) => <option key={ruleIndex} value={option?.value} disabled={option.selected}>{option?.name}</option>)}
-              </select></div>}
+              {ruleOptions?.rule_options && <div className='relative flex-grow'>
+                    <SelectDropdown containerStyle={`w-full select-dropdown-rule text-sm`} onChange={(e) => handleSpecificRules(e, i)}>
+                    {ruleOptions.rule_options?.map((option, ruleIndex) =>
+                        <SelectOption
+                            key={ruleIndex}
+                            value={option?.value}
+                            disabled={option.selected}
+                            label={option?.name}/>)}
+                    </SelectDropdown>
+              </div>}
 
-                {/** select values based on the operators */}
-              {ruleData[offer?.attribute_type]?.data && ruleData[offer?.attribute_type].data.length !== 0 && <div className='select-rule-values relative'>
+              {ruleOptions?.data && ruleOptions.data.length !== 0 && <div className='select-rule-values relative'>
                   <input ref={(el) => (inputRefs.current[i] = el)} type={'text'} className={`search-rule-value h-7 indent-7 text-sm placeholder:text-black`} onFocus={() => setFocusedIndex(i)} placeholder={`search ${offer.attribute_type.split('-')[1]}`} />
-                  <span className='absolute top-2 right-2 text-sm'>{offer?.values.length}/{ruleData[offer?.attribute_type]?.data.length}</span>
+                  <span className='absolute top-2 right-2 text-sm'>{offer?.values.length}/{ruleOptions?.data.length}</span>
                   <img src={SearchIcon} className="absolute top-[9px] left-1.5 w-5 h-5" />
                   {focusedIndex == i && <ul className='search-rule-list'>
-                      {ruleData[offer?.attribute_type]?.data?.map((value, i) => <li className='flex items-center gap-1.5 hover:bg-[#ececec] hover:rounded-md my-1 mx-2 px-1 py-1.5' key={i}>
+                      {ruleOptions?.data?.map((value, i) => <li className='flex items-center gap-1.5 hover:bg-[#ececec] hover:rounded-md my-1 mx-2 px-1 py-1.5' key={i}>
                         <Checkbox 
                             checked={offer?.values.map(el => el.value).includes(value)} 
                             value={value}
@@ -163,22 +175,23 @@ const EligibilityCriteria = () => {
                   </ul>}
               </div>}
 
-              {offer?.attribute_type === 'cart-value-range' ? <div className='flex gap-1.5'>
-                  <input type={'number'} min="0" defaultValue={100} className='cart-input-value indent-2 text-sm h-9 border border-[#ccc] rounded-md' />
-                  <input type={'number'} min="0" defaultValue={200} className='cart-input-value indent-2 text-sm h-9 border border-[#ccc] rounded-md' />
-              </div> : null}
-              
-              {offers.length > 1 && <span className='delete-icon flex items-center cursor-pointer pl-1' onClick={() => deleteHandler(offer?.priority)}>
-                  <img src={XIcon} className="" />
-              </span>}
-          </div>
+            {offer?.attribute_type === 'cart-value-range' ? 
+                <RangeInput min={0} max={200} />
+            : null}
 
-            {/** selected chip data values for rules */}
+            {offers.length > 1 && 
+                <DeleteIcon 
+                    containerStyle={'flex items-center'} 
+                    icon={XIcon} 
+                    onClick={() => deleteHandler(offer.priority)}
+                />}
+            </div>
+
             {offer?.values.length !== 0 && <div className={`flex absolute left-[30px] gap-2 z-[1] ${i !== 0 ? 'top-[90px]' : `top-[45px]`}`}>
-                {offer?.values?.map((value) => <FacetChip key={value.value} onClick={(value) => deleteChip(value)} data={value} />)}
+                {offer?.values?.map((value) => <FacetChip data={value} key={value.value} onClick={(value) => deleteChip(value)} />)}
             </div>}
 
-          </div>
+          </div>}
           )}
           <div className='and-btn-container pt-4'>
             <Button 

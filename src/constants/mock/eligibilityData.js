@@ -100,6 +100,21 @@ export const offerRulesData = {
                 name: 'free',
                 value: 'free',
                 selected: false
+            },
+            {
+                name: 'discount',
+                value: 'discount',
+                selected: false
+            },
+            {
+                name: 'cash',
+                value: 'cash',
+                selected: false
+            },
+            {
+                name: 'upi',
+                value: 'upi',
+                selected: false
             }
         ],
         isMultipleSelect: true

@@ -17,6 +17,16 @@
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number]{
+    -moz-appearance: textfield;
+}
+
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
